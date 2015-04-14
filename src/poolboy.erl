@@ -257,9 +257,16 @@ start_pool(StartFun, PoolArgs, WorkerArgs) ->
     end.
 
 new_worker(Sup) ->
-    {ok, Pid} = supervisor:start_child(Sup, []),
-    true = link(Pid),
-    Pid.
+    Ret = supervisor:start_child(Sup, []),
+    case Ret of
+        {ok, Pid} ->
+            true = link(Pid),
+            Pid;
+        _ ->
+            m_logger:log("~p ~p new_worker sleeps for a while ~p ~n",[?MODULE,?LINE,Sup]),
+            timer:sleep(5000),
+            new_worker(Sup)
+    end.
 
 new_worker(Sup, FromPid) ->
     Pid = new_worker(Sup),

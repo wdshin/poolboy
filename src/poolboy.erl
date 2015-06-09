@@ -273,9 +273,14 @@ new_worker(Sup, FromPid) ->
     Ref = erlang:monitor(process, FromPid),
     {Pid, Ref}.
 
+
 dismiss_worker(Sup, Pid) ->
-    true = unlink(Pid),
-    supervisor:terminate_child(Sup, Pid).
+    if is_pid(Pid) ->
+            true = unlink(Pid),
+            supervisor:terminate_child(Sup, Pid);
+       true ->
+            Pid
+    end.
 
 prepopulate(N, _Sup) when N < 1 ->
     [];
